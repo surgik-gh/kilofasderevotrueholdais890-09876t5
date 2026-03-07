@@ -1,0 +1,475 @@
+import { ReactNode, useState, useEffect } from 'react';
+import { RobotEyes } from './RobotEyes';
+import { useStore } from '@/store';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { 
+  BookOpen, 
+  LayoutDashboard, 
+  MessageCircle, 
+  Trophy, 
+  CreditCard,
+  LogOut,
+  Menu,
+  X,
+  HelpCircle,
+  Shield,
+  Sparkles,
+  Bot,
+  ChevronRight,
+  Coins,
+  Library,
+  Clock,
+  TrendingUp,
+  Star
+} from 'lucide-react';
+import { cn } from '@/utils/cn';
+import { SUBJECT_CATEGORIES } from '@/utils/subjects';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface LayoutProps {
+  children: ReactNode;
+  isThinking?: boolean;
+  celebrating?: boolean;
+}
+
+export function Layout({ children, isThinking = false, celebrating = false }: LayoutProps) {
+  const { profile, logout, lessons, leaderboard, users } = useStore();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [showQuickPanel, setShowQuickPanel] = useState(false);
+
+  // Close sidebar on route change for mobile
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [location.pathname]);
+
+  if (!profile) {
+    return <div className="min-h-screen">{children}</div>;
+  }
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  // Build navigation based on role
+  const getNavItems = () => {
+    const baseItems = [
+      { icon: LayoutDashboard, label: 'Главная', path: '/dashboard' },
+    ];
+    
+    // Regular users
+    const items = [
+      ...baseItems,
+      { icon: Bot, label: 'Alies AI', path: '/alies-chat', highlight: true },
+      { icon: BookOpen, label: 'Создать урок', path: '/create-lesson' },
+      { icon: MessageCircle, label: 'Сообщения', path: '/chat' },
+      { icon: Trophy, label: 'Лидеры', path: '/leaderboard' },
+      { icon: CreditCard, label: 'Подписка', path: '/pricing' },
+      { icon: HelpCircle, label: 'Поддержка', path: '/support' },
+    ];
+    
+    return items;
+  };
+  
+  const navItems = getNavItems();
+
+  const recentLessons = lessons.slice(-3).reverse();
+  const topUsers = leaderboard.slice(0, 3);
+
+  return (
+    <div className="min-h-screen flex relative">
+      <RobotEyes isThinking={isThinking} celebrating={celebrating} />
+      
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <aside 
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-72 liquid-glass transform transition-transform duration-300 ease-out lg:translate-x-0 lg:static flex flex-col",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {/* Logo Header */}
+        <div className="h-20 flex items-center px-6 border-b border-white/20 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg relative overflow-hidden">
+              <Sparkles className="w-5 h-5 text-white relative z-10" />
+              <div className="absolute inset-0 bg-white/20" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold gradient-text">AILesson</h1>
+              <p className="text-xs text-slate-500">Alies AI Platform</p>
+            </div>
+          </div>
+          <button 
+            className="ml-auto lg:hidden p-2 hover:bg-white/50 rounded-xl transition-colors"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            <X className="h-5 w-5 text-slate-500" />
+          </button>
+        </div>
+
+        {/* User Quick Info - Mobile Friendly */}
+        <div className="p-4 border-b border-white/10 shrink-0">
+          <Link 
+            to="/profile"
+            className="flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-white/60 to-white/40 backdrop-blur-sm shadow-sm hover:from-white/80 hover:to-white/60 transition-all"
+          >
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary-400 to-purple-500 flex items-center justify-center text-white font-bold text-lg shadow-md overflow-hidden">
+              {profile.full_name[0].toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-slate-800 truncate">
+                {profile.full_name}
+              </p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600">
+                  <Coins className="w-3 h-3" />
+                  {profile.wisdom_coins}
+                </span>
+                <span className="text-xs text-slate-400">•</span>
+                <span className="text-xs text-primary-600 capitalize font-medium">
+                  {profile.subscription_tier.split('_')[1] || 'Freemium'}
+                </span>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-4 scrollbar-thin">
+          {/* Main Navigation */}
+          <nav className="space-y-1">
+            {navItems.map((item) => {
+              const isHighlight = 'highlight' in item && (item as { highlight?: boolean }).highlight === true;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group relative overflow-hidden",
+                    location.pathname === item.path
+                      ? "bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30"
+                      : isHighlight 
+                        ? "text-primary-600 bg-gradient-to-r from-primary-50 to-purple-50 hover:from-primary-100 hover:to-purple-100 border border-primary-200"
+                        : "text-slate-600 hover:bg-white/70 hover:text-primary-600"
+                  )}
+                >
+                  <item.icon className={cn(
+                    "h-5 w-5 shrink-0",
+                    isHighlight && location.pathname !== item.path ? "text-primary-500" : ""
+                  )} />
+                  <span>{item.label}</span>
+                  {isHighlight && location.pathname !== item.path && (
+                    <span className="ml-auto px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-primary-500 to-purple-500 text-white rounded-full">
+                      AI
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Subjects Section */}
+          <div className="space-y-2 pt-2">
+            <h3 className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <Library className="w-3.5 h-3.5" />
+              Предметы
+            </h3>
+              {Object.entries(SUBJECT_CATEGORIES).map(([category, subjects]) => (
+                <div key={category}>
+                  <button
+                    onClick={() => setExpandedCategory(expandedCategory === category ? null : category)}
+                    className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-white/50 rounded-xl transition-all"
+                  >
+                    <span>{category}</span>
+                    <ChevronRight className={cn(
+                      "w-4 h-4 text-slate-400 transition-transform duration-200",
+                      expandedCategory === category && "rotate-90"
+                    )} />
+                  </button>
+                  <AnimatePresence>
+                    {expandedCategory === category && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pl-4 py-1 space-y-0.5">
+                          {subjects.map((subject) => (
+                            <Link
+                              key={subject}
+                              to={`/lessons?subject=${encodeURIComponent(subject)}`}
+                              className="block px-4 py-2 text-sm text-slate-600 hover:text-primary-600 hover:bg-white/50 rounded-lg transition-all"
+                            >
+                              {subject}
+                            </Link>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Logout Button */}
+        <div className="p-4 border-t border-white/20 shrink-0">
+          <button
+            onClick={handleLogout}
+            className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all"
+          >
+            <LogOut className="h-4 w-4" />
+            Выйти
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 min-w-0">
+        {/* Mobile Header */}
+        <div className="sticky top-0 z-30 flex items-center justify-between h-16 glass px-4 lg:hidden">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 hover:bg-white/50 rounded-xl transition-colors"
+            >
+              <Menu className="h-6 w-6 text-slate-600" />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-lg font-bold gradient-text">AILesson</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/alies-chat"
+              className="p-2 rounded-xl bg-gradient-to-r from-primary-500 to-purple-500 text-white shadow-lg"
+            >
+              <Bot className="w-5 h-5" />
+            </Link>
+            <button
+              onClick={() => setShowQuickPanel(!showQuickPanel)}
+              className="p-2 hover:bg-white/50 rounded-xl transition-colors relative"
+            >
+              <TrendingUp className="h-5 w-5 text-slate-600" />
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Stats Panel (Mobile) */}
+        <AnimatePresence>
+          {showQuickPanel && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="lg:hidden overflow-hidden border-b border-slate-100"
+            >
+              <div className="p-4 bg-gradient-to-r from-primary-50/50 to-purple-50/50 space-y-4">
+                {/* Recent Lessons */}
+                <div>
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <Clock className="w-3 h-3" />
+                    Недавние уроки
+                  </h4>
+                  <div className="space-y-2">
+                    {recentLessons.length > 0 ? recentLessons.map(lesson => (
+                      <Link
+                        key={lesson.id}
+                        to={`/lesson/${lesson.id}`}
+                        className="flex items-center gap-3 p-2 bg-white/70 rounded-xl hover:bg-white transition-colors"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-400 to-purple-500 flex items-center justify-center text-white">
+                          <BookOpen className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-800 truncate">{lesson.title}</p>
+                          <p className="text-xs text-slate-500">{lesson.subject}</p>
+                        </div>
+                      </Link>
+                    )) : (
+                      <p className="text-sm text-slate-400 italic">Нет уроков</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Top Users */}
+                <div>
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <Star className="w-3 h-3" />
+                    Лидеры дня
+                  </h4>
+                  <div className="flex gap-2">
+                    {topUsers.map((entry, index) => {
+                      const entryUser = users.find(u => u.id === entry.student_id);
+                      return (
+                        <div
+                          key={entry.student_id}
+                          className="flex-1 p-2 bg-white/70 rounded-xl text-center"
+                        >
+                          <div className={cn(
+                            "w-8 h-8 mx-auto rounded-lg flex items-center justify-center text-white font-bold text-sm",
+                            index === 0 ? "bg-gradient-to-br from-amber-400 to-orange-500" :
+                            index === 1 ? "bg-gradient-to-br from-slate-400 to-slate-500" :
+                            "bg-gradient-to-br from-amber-600 to-amber-700"
+                          )}>
+                            {index + 1}
+                          </div>
+                          <p className="text-xs font-medium text-slate-800 mt-1 truncate">{entryUser?.name || 'Пользователь'}</p>
+                          <p className="text-xs text-primary-600 font-bold">{entry.score}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Page Content */}
+        <div className="p-4 lg:p-8 max-w-7xl mx-auto">
+          {children}
+        </div>
+      </main>
+
+      {/* Desktop Right Quick Panel - Floating */}
+      <div className="hidden xl:block fixed right-6 top-24 w-72 space-y-4 z-20">
+          {/* Alies AI Quick Access */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Link
+              to="/alies-chat"
+              className="block p-4 rounded-2xl liquid-glass hover:shadow-xl transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-400 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <Bot className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                    Alies AI
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                  </h3>
+                  <p className="text-xs text-slate-500">Задай вопрос</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-primary-500 group-hover:translate-x-1 transition-all" />
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* Recent Lessons */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="p-4 rounded-2xl liquid-glass"
+          >
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Clock className="w-3 h-3" />
+              Недавние уроки
+            </h4>
+            <div className="space-y-2">
+              {recentLessons.length > 0 ? recentLessons.map(lesson => (
+                <Link
+                  key={lesson.id}
+                  to={`/lesson/${lesson.id}`}
+                  className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 transition-colors group"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary-100 to-purple-100 flex items-center justify-center text-primary-600 group-hover:from-primary-200 group-hover:to-purple-200 transition-colors">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800 truncate group-hover:text-primary-600 transition-colors">{lesson.title}</p>
+                    <p className="text-xs text-slate-400">{lesson.subject}</p>
+                  </div>
+                </Link>
+              )) : (
+                <p className="text-sm text-slate-400 italic py-2">Нет созданных уроков</p>
+              )}
+            </div>
+            <Link
+              to="/create-lesson"
+              className="mt-3 flex items-center justify-center gap-2 w-full py-2 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-xl transition-colors"
+            >
+              <Sparkles className="w-4 h-4" />
+              Создать урок
+            </Link>
+          </motion.div>
+
+          {/* Top Leaders */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="p-4 rounded-2xl liquid-glass"
+          >
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Trophy className="w-3 h-3" />
+              Лидеры дня
+            </h4>
+            <div className="space-y-2">
+              {topUsers.length > 0 ? topUsers.map((entry, index) => {
+                const entryUser = users.find(u => u.id === entry.student_id);
+                return (
+                  <div
+                    key={entry.student_id}
+                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/50 transition-colors"
+                  >
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm",
+                      index === 0 ? "bg-gradient-to-br from-amber-400 to-orange-500 shadow-md shadow-amber-500/30" :
+                      index === 1 ? "bg-gradient-to-br from-slate-400 to-slate-500" :
+                      "bg-gradient-to-br from-amber-600 to-amber-700"
+                    )}>
+                      {index + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-800 truncate">{entryUser?.name || 'Пользователь'}</p>
+                    </div>
+                    <span className="text-sm font-bold text-primary-600">{entry.score}</span>
+                  </div>
+                );
+              }) : (
+                <p className="text-sm text-slate-400 italic py-2">Таблица пуста</p>
+              )}
+            </div>
+            <Link
+              to="/leaderboard"
+              className="mt-3 flex items-center justify-center gap-2 w-full py-2 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-xl transition-colors"
+            >
+              Все лидеры
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
+        </div>
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  );
+}

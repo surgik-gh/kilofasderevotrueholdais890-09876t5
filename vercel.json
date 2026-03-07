@@ -1,0 +1,110 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/daily-reset",
+      "schedule": "0 18 * * *"
+    },
+    {
+      "path": "/api/cron/biweekly-grants",
+      "schedule": "0 0 */14 * *"
+    },
+    {
+      "path": "/api/cron/daily-eligibility",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/reset-daily-quests",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/reset-weekly-quests",
+      "schedule": "0 0 * * 1"
+    },
+    {
+      "path": "/api/cron/check-streaks",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/generate-daily-content",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/generate-weekly-challenge",
+      "schedule": "0 0 * * 1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).css",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).woff2",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).png",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).jpg",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).webp",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ]
+}
