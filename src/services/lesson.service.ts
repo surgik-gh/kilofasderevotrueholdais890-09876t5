@@ -389,7 +389,7 @@ export class LessonService {
         return [];
       }
 
-      const lessonIds = assignments.map(a => a.lesson_id);
+      const lessonIds = assignments.map((a: any) => a.lesson_id);
 
       // Fetch lessons
       const { data: lessons, error: lessonError } = await supabase
