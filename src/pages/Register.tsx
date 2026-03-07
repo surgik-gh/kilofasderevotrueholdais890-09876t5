@@ -543,7 +543,7 @@ export default function Register() {
                         </h4>
                         <p className="text-sm text-gray-600">
                           {selectedRole === 'teacher' && (
-                            <>После регистрации вы получите <span className="font-semibold text-blue-600">150 монет мудрости</span> для создания уроков!</>
+                            <>После регистрации вы получите <span className="font-semibold text-blue-600">150 монет мудрости</span> для создания уроков!</span></>
                           )}
                           {selectedRole === 'parent' && 'Вы сможете отслеживать прогресс своих детей после привязки их аккаунтов.'}
                           {selectedRole === 'administrator' && 'У вас будет полный доступ к управлению платформой.'}
