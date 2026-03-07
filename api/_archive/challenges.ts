@@ -231,7 +231,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, userId: string
 }
 
 // DELETE /api/gamification/challenges - Cancel challenge
-async function handleDelete(req: VercelRequest, res: VercelResponse, userId: string) {
+async function handleDelete(req: VercelRequest, res: VercelResponse, _userId: string) {
   const { challengeId } = req.query;
 
   if (!challengeId || typeof challengeId !== 'string') {

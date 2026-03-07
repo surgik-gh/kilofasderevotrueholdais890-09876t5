@@ -134,8 +134,8 @@ async function handlePost(req: VercelRequest, res: VercelResponse, userId: strin
         return sendError(res, 400, 'Quest ID is required');
       }
 
-      await questService.claimQuestReward(userId, questId);
-      return res.status(200).json({ success: true });
+      const reward = await questService.completeQuest(userId, questId);
+      return res.status(200).json({ success: true, reward });
     }
 
     // Check quest completion
