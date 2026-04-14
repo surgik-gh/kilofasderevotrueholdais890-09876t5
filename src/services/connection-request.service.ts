@@ -95,7 +95,7 @@ export class ConnectionRequestService {
       }
 
       // Validate roles match request type
-      await this.validateRequestRoles(request_type, fromUser.role, toUser.role, to_user_id);
+      await this.validateRequestRoles(request_type, fromUser.role, toUser.role, from_user_id, to_user_id);
 
       // Check for existing pending or accepted request
       const { data: existingRequest, error: existingError } = await supabase
@@ -450,6 +450,7 @@ export class ConnectionRequestService {
     requestType: string,
     fromRole: string,
     toRole: string,
+    fromUserId: string,
     toUserId: string
   ): Promise<void> {
     if (requestType === 'parent_child') {
@@ -481,7 +482,7 @@ export class ConnectionRequestService {
       const { data: school, error } = await supabase
         .from('schools')
         .select('id')
-        .eq('id', toUserId)
+        .eq('id', fromUserId)
         .single();
       
       if (error || !school) {

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useStore } from '../store';
-import { supportService } from '../services/support.service';
+import { supportTicketService } from '../services/support.service';
 import { isSupabaseConfigured } from '../lib/supabase';
 
 /**
@@ -41,11 +41,11 @@ export function useSupport() {
     try {
       if (profile.role === 'administrator') {
         // Load all tickets for admins
-        const allTickets = await supportService.getAllTickets();
+        const allTickets = await supportTicketService.getAllTickets();
         setTickets(allTickets);
       } else {
         // Load user's tickets
-        const userTickets = await supportService.getUserTickets(profile.id);
+        const userTickets = await supportTicketService.getUserTickets(profile.id);
         setTickets(userTickets);
       }
     } catch (error) {
@@ -55,7 +55,7 @@ export function useSupport() {
 
   const loadTicketMessages = async (ticketId: string) => {
     try {
-      const messages = await supportService.getTicketMessages(ticketId);
+      const messages = await supportTicketService.getTicketMessages(ticketId);
       setTicketMessages(ticketId, messages);
     } catch (error) {
       console.error('Failed to load ticket messages:', error);
@@ -71,7 +71,7 @@ export function useSupport() {
 
     setLoading(true);
     try {
-      const ticket = await supportService.createTicket({
+      const ticket = await supportTicketService.createTicket({
         user_id: profile.id,
         subject: data.subject,
         description: data.description,
@@ -100,7 +100,7 @@ export function useSupport() {
     updateTicket(ticketId, { status });
 
     try {
-      const updated = await supportService.updateTicketStatus(ticketId, status);
+      const updated = await supportTicketService.updateTicketStatus(ticketId, status);
       updateTicket(ticketId, updated);
       return updated;
     } catch (error) {
@@ -124,7 +124,7 @@ export function useSupport() {
     addTicketMessage(ticketId, tempMessage);
 
     try {
-      const sentMessage = await supportService.sendTicketMessage(ticketId, profile.id, message);
+      const sentMessage = await supportTicketService.sendTicketMessage(ticketId, profile.id, message);
       // Replace temp message with real one
       const messages = ticketMessages[ticketId] || [];
       const updatedMessages = messages.map(m => m.id === tempMessage.id ? sentMessage : m);
@@ -141,7 +141,7 @@ export function useSupport() {
 
   const getTicket = async (ticketId: string) => {
     try {
-      return await supportService.getTicket(ticketId);
+      return await supportTicketService.getTicket(ticketId);
     } catch (error) {
       console.error('Failed to get ticket:', error);
       throw error;

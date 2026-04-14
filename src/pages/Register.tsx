@@ -16,13 +16,11 @@ import {
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { authService } from '../services/auth.service'
-import { useStore } from '../store'
 import RoleSelector, { UserRole } from '../components/auth/RoleSelector'
 import SchoolSelector, { SchoolOption } from '../components/auth/SchoolSelector'
 
 export default function Register() {
   const navigate = useNavigate()
-  const { setProfile } = useStore()
   
   const [formData, setFormData] = useState({
     name: '',
@@ -108,8 +106,8 @@ export default function Register() {
   }
 
   const validateStep3 = () => {
-    // Only students need to select a school
-    if (selectedRole === 'student' && !formData.schoolId) {
+    // Students and teachers need to select a school
+    if ((selectedRole === 'student' || selectedRole === 'teacher') && !formData.schoolId) {
       setError('Выберите школу')
       return false
     }
@@ -148,6 +146,29 @@ export default function Register() {
           grade: formData.grade,
           gradeLetter: formData.gradeLetter,
         })
+      } else if (selectedRole === 'teacher' && formData.schoolId) {
+        // Register teacher with school
+        const profile = await authService.registerOtherRole({
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.name,
+          role: selectedRole,
+        })
+        
+        // Update teacher's school_id
+        await supabase
+          .from('user_profiles')
+          .update({ school_id: formData.schoolId })
+          .eq('id', profile.id)
+        
+        // Create school membership
+        await supabase
+          .from('school_memberships')
+          .insert({
+            school_id: formData.schoolId,
+            user_id: profile.id,
+            role: 'teacher'
+          })
       } else {
         await authService.registerOtherRole({
           email: formData.email,
@@ -497,17 +518,17 @@ export default function Register() {
                     <GraduationCap className="w-8 h-8 text-purple-600" />
                   </div>
                   <h3 className="font-semibold text-gray-800">
-                    {selectedRole === 'student' ? 'Ваша школа' : 'Завершение регистрации'}
+                    {(selectedRole === 'student' || selectedRole === 'teacher') ? 'Ваша школа' : 'Завершение регистрации'}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    {selectedRole === 'student' 
+                    {(selectedRole === 'student' || selectedRole === 'teacher')
                       ? 'Выберите учебное заведение' 
                       : 'Подтвердите регистрацию'}
                   </p>
                 </div>
 
-                {/* School selection - only for students */}
-                {selectedRole === 'student' && (
+                {/* School selection - for students and teachers */}
+                {(selectedRole === 'student' || selectedRole === 'teacher') && (
                   <>
                     <SchoolSelector
                       selectedSchoolId={formData.schoolId}
@@ -522,7 +543,9 @@ export default function Register() {
                         <div>
                           <h4 className="font-medium text-gray-800">Приветственный бонус</h4>
                           <p className="text-sm text-gray-600">
-                            После регистрации вы получите <span className="font-semibold text-blue-600">50 монет мудрости</span> для создания уроков и викторин!
+                            После регистрации вы получите <span className="font-semibold text-blue-600">
+                              {selectedRole === 'teacher' ? '150 монет мудрости' : '50 монет мудрости'}
+                            </span> для создания уроков и викторин!
                           </p>
                         </div>
                       </div>
@@ -530,21 +553,17 @@ export default function Register() {
                   </>
                 )}
 
-                {/* Info for non-students */}
-                {selectedRole !== 'student' && (
+                {/* Info for non-students and non-teachers */}
+                {selectedRole !== 'student' && selectedRole !== 'teacher' && (
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
                     <div className="flex items-start gap-3">
                       <Sparkles className="w-5 h-5 text-blue-500 mt-0.5" />
                       <div>
                         <h4 className="font-medium text-gray-800">
-                          {selectedRole === 'teacher' && 'Приветственный бонус для учителя'}
                           {selectedRole === 'parent' && 'Добро пожаловать, родитель!'}
                           {selectedRole === 'administrator' && 'Добро пожаловать, администратор!'}
                         </h4>
                         <p className="text-sm text-gray-600">
-                          {selectedRole === 'teacher' && (
-                            <>После регистрации вы получите <span className="font-semibold text-blue-600">150 монет мудрости</span> для создания уроков!</>
-                          )}
                           {selectedRole === 'parent' && 'Вы сможете отслеживать прогресс своих детей после привязки их аккаунтов.'}
                           {selectedRole === 'administrator' && 'У вас будет полный доступ к управлению платформой.'}
                         </p>

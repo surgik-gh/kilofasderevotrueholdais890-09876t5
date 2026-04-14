@@ -22,12 +22,17 @@ const Pricing = lazy(() => import('@/pages/Pricing').then(m => ({ default: m.Pri
 const Support = lazy(() => import('@/pages/Support').then(m => ({ default: m.Support })));
 const AdminPanel = lazy(() => import('@/pages/AdminPanel').then(m => ({ default: m.AdminPanel })));
 const SchoolDashboard = lazy(() => import('@/pages/SchoolDashboard'));
+const TeacherDashboard = lazy(() => import('@/pages/TeacherDashboard'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const Achievements = lazy(() => import('@/pages/Achievements'));
 const Quests = lazy(() => import('@/pages/Quests'));
 const Challenges = lazy(() => import('@/pages/Challenges'));
 const Connections = lazy(() => import('@/pages/Connections'));
 const Notifications = lazy(() => import('@/pages/Notifications'));
+const Roadmap = lazy(() => import('@/pages/Roadmap'));
+const MyLessons = lazy(() => import('@/pages/MyLessons').then(m => ({ default: m.MyLessons })));
+const QuizDemo = lazy(() => import('@/pages/QuizDemo').then(m => ({ default: m.QuizDemo })));
+const TutorCall = lazy(() => import('@/pages/TutorCall').then(m => ({ default: m.TutorCall })));
 const NotificationManager = lazy(() => import('@/components/gamification/shared/NotificationManager').then(m => ({ default: m.NotificationManager })));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -112,6 +117,24 @@ export function App() {
             </ProtectedRoute>
           } />
 
+          <Route path="/admin/users" element={
+            <ProtectedRoute>
+              <AdminPanel />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/content" element={
+            <ProtectedRoute>
+              <AdminPanel />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/analytics" element={
+            <ProtectedRoute>
+              <AdminPanel />
+            </ProtectedRoute>
+          } />
+
           <Route path="/school" element={
             <ProtectedRoute>
               <SchoolDashboard />
@@ -151,6 +174,54 @@ export function App() {
           <Route path="/notifications" element={
             <ProtectedRoute>
               <Notifications />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/roadmap" element={
+            <ProtectedRoute>
+              <Roadmap />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/my-lessons" element={
+            <ProtectedRoute>
+              <MyLessons />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/quiz-demo" element={
+            <ProtectedRoute>
+              <QuizDemo />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/tutor-call" element={
+            <ProtectedRoute>
+              <TutorCall />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/children" element={
+            <ProtectedRoute>
+              <SchoolDashboard />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/progress" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/students" element={
+            <ProtectedRoute>
+              <TeacherDashboard />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/class-analytics" element={
+            <ProtectedRoute>
+              <TeacherDashboard />
             </ProtectedRoute>
           } />
 

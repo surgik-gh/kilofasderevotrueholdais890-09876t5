@@ -24,7 +24,8 @@ import {
   Swords,
   Settings,
   Users,
-  BarChart3
+  BarChart3,
+  Phone
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { SUBJECT_CATEGORIES } from '@/utils/subjects';
@@ -197,6 +198,7 @@ export function Layout({ children, isThinking = false, celebrating = false }: La
     return [
       ...baseItems,
       { icon: Bot, label: 'Alies AI', path: '/alies-chat', highlight: true },
+      { icon: Phone, label: 'AI Репетитор', path: '/tutor-call', highlight: true },
       { icon: BookOpen, label: 'Создать урок', path: '/create-lesson' },
       { icon: Library, label: 'Мои уроки', path: '/my-lessons' },
       { icon: MessageCircle, label: 'Сообщения', path: '/chat' },

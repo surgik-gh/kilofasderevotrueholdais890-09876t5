@@ -523,6 +523,40 @@ export class TokenEconomyService {
   }
 
   /**
+   * Calculate cost for tutor call based on duration
+   * - 10 Wisdom Coins per minute
+   * - Minimum 5 minutes (50 coins)
+   * - Subscription tier discounts apply
+   * 
+   * @param durationMinutes Call duration in minutes
+   * @param subscriptionTier User's subscription tier
+   * @returns Cost in Wisdom Coins
+   */
+  calculateTutorCallCost(durationMinutes: number, subscriptionTier: SubscriptionTier): number {
+    const COINS_PER_MINUTE = 10;
+    const MIN_DURATION = 5;
+    
+    // Minimum 5 minutes
+    const chargeableMinutes = Math.max(durationMinutes, MIN_DURATION);
+    const baseCharge = chargeableMinutes * COINS_PER_MINUTE;
+    
+    // Apply subscription discount
+    const discounts: Record<SubscriptionTier, number> = {
+      student_freemium: 0,
+      student_promium: 0.1,
+      student_premium: 0.2,
+      student_legend: 0.3,
+      teacher_freemium: 0.1,
+      teacher_promium: 0.15,
+      teacher_premium: 0.25,
+      teacher_maxi: 0.3,
+    };
+    
+    const discount = discounts[subscriptionTier] || 0;
+    return Math.ceil(baseCharge * (1 - discount));
+  }
+
+  /**
    * Get human-readable transaction description
    */
   private getTransactionDescription(
@@ -540,6 +574,7 @@ export class TokenEconomyService {
       quiz_creation: `Quiz creation: -${absAmount} Wisdom Coins`,
       expert_chat_usage: `Expert chat usage: -${absAmount} Wisdom Coins`,
       subscription_purchase: `Subscription purchase: -${absAmount} Wisdom Coins`,
+      tutor_call_usage: `Tutor call: -${absAmount} Wisdom Coins`,
     };
 
     return descriptions[type] || `Transaction: ${amount} Wisdom Coins`;

@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Trophy, TrendingUp, Award, Star, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { cn } from '@/utils/cn';
 import { useAchievements } from '@/hooks/useAchievements';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useStore } from '@/store';
-import type { Achievement, AchievementRarity } from '@/store';
+import type { Achievement } from '@/store';
 import { 
   AchievementGrid, 
   BadgeCollection 
@@ -29,7 +28,6 @@ import {
  * - 8.1-8.7: Badge collection and favorite management
  */
 export default function Achievements() {
-  const navigate = useNavigate();
   const { profile } = useStore();
   const {
     achievements: userAchievements,
@@ -49,25 +47,18 @@ export default function Achievements() {
 
   const [stats, setStats] = useState<any>(null);
 
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!profile) {
-      navigate('/login');
-    }
-  }, [profile, navigate]);
-
   // Load user achievements and stats
   useEffect(() => {
-    if (profile) {
-      loadUserAchievements();
-      loadStats();
-    }
-  }, [profile]);
+    if (!profile) return;
+    
+    const loadStats = async () => {
+      const achievementStats = await getAchievementStats();
+      setStats(achievementStats);
+    };
 
-  const loadStats = async () => {
-    const achievementStats = await getAchievementStats();
-    setStats(achievementStats);
-  };
+    loadUserAchievements();
+    loadStats();
+  }, [profile, loadUserAchievements, getAchievementStats]);
 
   const handleFavoriteToggle = async (achievementId: string, isFavorite: boolean) => {
     await setFavoriteAchievement(achievementId, isFavorite);
@@ -354,7 +345,7 @@ export default function Achievements() {
                   ua => ua.achievement_id === achievement.id
                 );
                 
-                const rarityGradients: Record<AchievementRarity, string> = {
+                const rarityGradients: Record<string, string> = {
                   common: 'from-slate-400 to-slate-500',
                   rare: 'from-blue-400 to-cyan-500',
                   epic: 'from-purple-500 to-pink-500',

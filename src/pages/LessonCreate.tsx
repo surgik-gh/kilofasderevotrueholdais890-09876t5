@@ -25,13 +25,12 @@ export function LessonCreate() {
   const { profile } = useStore();
   const navigate = useNavigate();
 
-  if (!profile) {
-    navigate('/login');
-    return null;
-  }
+  // ProtectedRoute handles authentication, no need for manual check
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!profile) return;
 
     const inputText = mode === 'topic' ? topic : material;
     if (!inputText.trim()) {
@@ -138,15 +137,17 @@ export function LessonCreate() {
           </p>
           
           {/* Balance Display */}
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
-            <Coins className="w-5 h-5 text-amber-600" />
-            <span className="text-sm text-gray-700">
-              Ваш баланс: <span className="font-bold text-amber-600">{profile.wisdom_coins}</span> монет
-            </span>
-            <span className="text-xs text-gray-500 ml-2">
-              (Стоимость: {LESSON_CREATION_COST} монет)
-            </span>
-          </div>
+          {profile && (
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+              <Coins className="w-5 h-5 text-amber-600" />
+              <span className="text-sm text-gray-700">
+                Ваш баланс: <span className="font-bold text-amber-600">{profile.wisdom_coins}</span> монет
+              </span>
+              <span className="text-xs text-gray-500 ml-2">
+                (Стоимость: {LESSON_CREATION_COST} монет)
+              </span>
+            </div>
+          )}
         </motion.div>
 
         {/* Mode Selector */}
@@ -240,30 +241,34 @@ export function LessonCreate() {
           )}
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isGenerating || profile.wisdom_coins < LESSON_CREATION_COST}
-            className="w-full py-4 bg-gradient-to-r from-primary-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span className="hidden sm:inline">Создание урока...</span>
-                <span className="sm:hidden">Создание...</span>
-              </>
-            ) : (
-              <>
-                <BookOpen className="w-5 h-5" />
-                <span className="hidden sm:inline">Создать урок ({LESSON_CREATION_COST} монет)</span>
-                <span className="sm:hidden">Создать ({LESSON_CREATION_COST})</span>
-              </>
-            )}
-          </button>
+          {profile && (
+            <>
+              <button
+                type="submit"
+                disabled={isGenerating || profile.wisdom_coins < LESSON_CREATION_COST}
+                className="w-full py-4 bg-gradient-to-r from-primary-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span className="hidden sm:inline">Создание урока...</span>
+                    <span className="sm:hidden">Создание...</span>
+                  </>
+                ) : (
+                  <>
+                    <BookOpen className="w-5 h-5" />
+                    <span className="hidden sm:inline">Создать урок ({LESSON_CREATION_COST} монет)</span>
+                    <span className="sm:hidden">Создать ({LESSON_CREATION_COST})</span>
+                  </>
+                )}
+              </button>
 
-          {profile.wisdom_coins < LESSON_CREATION_COST && (
-            <p className="text-sm text-red-600 text-center">
-              Недостаточно монет для создания урока
-            </p>
+              {profile.wisdom_coins < LESSON_CREATION_COST && (
+                <p className="text-sm text-red-600 text-center">
+                  Недостаточно монет для создания урока
+                </p>
+              )}
+            </>
           )}
         </motion.form>
 

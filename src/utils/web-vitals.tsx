@@ -76,12 +76,12 @@ class WebVitalsReporter {
 
     try {
       // Dynamically import web-vitals library
-      const { onCLS, onFCP, onFID, onLCP, onTTFB, onINP } = await import('web-vitals');
+      const webVitals = await import('web-vitals');
+      const { onCLS, onFCP, onLCP, onTTFB, onINP } = webVitals;
 
-      // Track all Core Web Vitals
+      // Track all Core Web Vitals (FID deprecated, using INP instead)
       onCLS(this.handleMetric.bind(this));
       onFCP(this.handleMetric.bind(this));
-      onFID(this.handleMetric.bind(this));
       onLCP(this.handleMetric.bind(this));
       onTTFB(this.handleMetric.bind(this));
       onINP(this.handleMetric.bind(this));

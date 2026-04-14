@@ -12,7 +12,7 @@ import type { UserProfile, Chat } from '../lib/supabase';
 type Tab = 'overview' | 'teachers' | 'students' | 'chats';
 
 export default function SchoolDashboard() {
-  const { currentUser } = useStore();
+  const profile = useStore((state) => state.profile);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -26,12 +26,12 @@ export default function SchoolDashboard() {
   const [parentChats, setParentChats] = useState<Chat[]>([]);
   const [teacherChats, setTeacherChats] = useState<Chat[]>([]);
 
-  if (!currentUser || currentUser.role !== 'parent') return null;
+  if (!profile || profile.role !== 'parent') return null;
 
   // Fetch school data
   useEffect(() => {
     const fetchSchoolData = async () => {
-      if (!currentUser.school_id) {
+      if (!profile.school_id) {
         setError('Вы не привязаны к школе');
         setLoading(false);
         return;
@@ -42,14 +42,14 @@ export default function SchoolDashboard() {
         setError(null);
 
         // Fetch school information
-        const schoolData = await parentSchoolService.getSchool(currentUser.school_id);
+        const schoolData = await parentSchoolService.getSchool(profile.school_id);
         setSchool(schoolData);
 
         // Fetch school members
         const [teachersData, studentsData, parentsData] = await Promise.all([
-          parentSchoolService.getSchoolMembers(currentUser.school_id, 'teacher'),
-          parentSchoolService.getSchoolMembers(currentUser.school_id, 'student'),
-          parentSchoolService.getSchoolMembers(currentUser.school_id, 'parent'),
+          parentSchoolService.getSchoolMembers(profile.school_id, 'teacher'),
+          parentSchoolService.getSchoolMembers(profile.school_id, 'student'),
+          parentSchoolService.getSchoolMembers(profile.school_id, 'parent'),
         ]);
 
         setTeachers(teachersData);
@@ -57,7 +57,7 @@ export default function SchoolDashboard() {
         setParents(parentsData);
 
         // Fetch school chats for parent
-        const chats = await parentSchoolService.getSchoolChatsForParent(currentUser.id, currentUser.school_id);
+        const chats = await parentSchoolService.getSchoolChatsForParent(profile.id, profile.school_id);
         setParentChats(chats.filter(c => c.type === 'school_parent'));
         setTeacherChats(chats.filter(c => c.type === 'school_teacher'));
 
@@ -70,7 +70,7 @@ export default function SchoolDashboard() {
     };
 
     fetchSchoolData();
-  }, [currentUser]);
+  }, [profile]);
 
   const filteredTeachers = teachers.filter(t => 
     t.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||

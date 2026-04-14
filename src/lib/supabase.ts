@@ -10,7 +10,21 @@ const env = (import.meta as any).env || {}
 const supabaseUrl = env.VITE_SUPABASE_URL || 'https://your-project.supabase.co'
 const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY || 'your-anon-key'
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  global: {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+  },
+  db: {
+    schema: 'public',
+  },
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+})
 
 // ============================================================================
 // DATABASE TYPES (aligned with design document)

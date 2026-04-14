@@ -33,7 +33,7 @@ interface SchoolConnection {
 type Connection = UserConnection | SchoolConnection;
 
 export function ConnectionsList() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,8 +53,14 @@ export function ConnectionsList() {
 
       const allConnections: Connection[] = [];
 
+      const effectiveRole = profile?.role;
+      if (!effectiveRole) {
+        setConnections([]);
+        return;
+      }
+
       // Load connections based on user role
-      if (user.role === 'parent') {
+      if (effectiveRole === 'parent') {
         // Load children
         const { data: childLinks, error: childError } = await supabase
           .from('parent_child_links')
@@ -117,7 +123,7 @@ export function ConnectionsList() {
             );
           }
         }
-      } else if (user.role === 'student') {
+      } else if (effectiveRole === 'student') {
         // Load parents
         const { data: parentLinks, error: parentError } = await supabase
           .from('parent_child_links')
@@ -180,7 +186,7 @@ export function ConnectionsList() {
             );
           }
         }
-      } else if (user.role === 'teacher') {
+      } else if (effectiveRole === 'teacher') {
         // Load schools
         const { data: schoolMemberships, error: schoolError } = await supabase
           .from('school_memberships')

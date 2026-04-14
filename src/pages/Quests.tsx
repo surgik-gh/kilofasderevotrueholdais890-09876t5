@@ -12,6 +12,7 @@ import {
 } from '@/components/gamification/shared';
 import { cn } from '@/utils/cn';
 import type { UserQuest } from '@/store';
+import { useStore } from '@/store';
 
 /**
  * Quests Page
@@ -26,6 +27,7 @@ import type { UserQuest } from '@/store';
  * - 3.7, 4.7: Show progress for each quest
  */
 export default function Quests() {
+  const profile = useStore((state) => state.profile);
   const {
     isLoading,
     error,
@@ -48,8 +50,10 @@ export default function Quests() {
 
   // Load quests on mount
   useEffect(() => {
-    loadActiveQuests();
-  }, []);
+    if (profile?.id) {
+      loadActiveQuests();
+    }
+  }, [profile?.id]);
 
   // Handle quest reward claim
   const handleClaimReward = async (questId: string) => {
@@ -84,21 +88,24 @@ export default function Quests() {
   // Show error with retry option
   if (error && totalQuests === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full">
-          <GamificationErrorDisplay
-            error={error}
-            context="quests"
-            onRetry={loadActiveQuests}
-          />
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="max-w-md w-full">
+            <GamificationErrorDisplay
+              error={error}
+              context="quests"
+              onRetry={loadActiveQuests}
+            />
+          </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   // Show skeleton loading state
   if (isLoading && totalQuests === 0) {
     return (
+      <Layout>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 py-8 px-4">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="liquid-glass p-6 rounded-3xl">
@@ -115,6 +122,7 @@ export default function Quests() {
           <SkeletonList count={3} component={QuestCardSkeleton} />
         </div>
       </div>
+      </Layout>
     );
   }
 

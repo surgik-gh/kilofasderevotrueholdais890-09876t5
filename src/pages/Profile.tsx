@@ -20,6 +20,7 @@ import { LevelDisplay, ExperienceBar, LevelStats } from '../components/gamificat
 import { MilestoneProgress } from '../components/gamification/milestones';
 import { StreakDisplay } from '../components/gamification/streaks';
 import { ProgressBar, ProgressCharts, TimeRangeSelector } from '../components/gamification/shared';
+import { SchoolManagement } from '../components/profile/SchoolManagement';
 
 export default function Profile() {
   const { profile, lessons, quizResults } = useStore();
@@ -279,13 +280,10 @@ export default function Profile() {
                     <Clock className="w-4 h-4" />
                     Серия: {loading ? '...' : streak} {streak === 1 ? 'день' : streak < 5 ? 'дня' : 'дней'}
                   </span>
-                  {profile.school_id && (
-                    <span className="flex items-center gap-1">
+                  {profile.role === 'teacher' && (
+                    <span className="flex items-center gap-1 text-primary-600 font-medium">
                       <Shield className="w-4 h-4" />
-                      Школа: {profile.school_id}
-                      {profile.role === 'student' && (
-                        <span className="text-xs text-gray-400 ml-1">(нельзя изменить)</span>
-                      )}
+                      Учитель
                     </span>
                   )}
                 </div>
@@ -294,6 +292,20 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* School Management for Teachers */}
+      {profile.role === 'teacher' && (
+        <div className="liquid-glass rounded-2xl p-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <Shield className="w-5 h-5 text-blue-500" />
+            Управление школами
+          </h2>
+          <SchoolManagement 
+            userId={profile.id} 
+            currentSchoolId={profile.school_id || undefined}
+          />
+        </div>
+      )}
 
       {/* Level and Experience Section */}
       {!levelLoading && userLevel && (

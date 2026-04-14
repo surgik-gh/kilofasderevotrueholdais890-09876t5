@@ -4,6 +4,7 @@ import "./index.css";
 import { App } from "./App";
 import "./utils/clearStorage"; // Import storage utilities for debugging
 import { webVitalsReporter } from "./utils/web-vitals";
+import "./utils/supabase-diagnostics"; // Import diagnostics
 
 // Initialize Web Vitals monitoring
 if (typeof window !== 'undefined') {

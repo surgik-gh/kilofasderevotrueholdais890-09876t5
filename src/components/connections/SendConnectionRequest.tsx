@@ -16,7 +16,7 @@ import { useAuth } from '../../hooks/useAuth';
 type RequestType = 'parent_child' | 'teacher_school' | 'student_school';
 
 export function SendConnectionRequest() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [targetId, setTargetId] = useState('');
   const [requestType, setRequestType] = useState<RequestType>('parent_child');
   const [message, setMessage] = useState('');
@@ -25,9 +25,9 @@ export function SendConnectionRequest() {
   const [success, setSuccess] = useState<string | null>(null);
 
   const getAvailableRequestTypes = (): RequestType[] => {
-    if (!user) return [];
+    if (!profile) return [];
 
-    switch (user.role) {
+    switch (profile.role) {
       case 'parent':
         return ['parent_child'];
       case 'teacher':
@@ -150,7 +150,7 @@ export function SendConnectionRequest() {
     return (
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <p className="text-sm text-yellow-800">
-          {user?.role === 'student' 
+          {profile?.role === 'student' 
             ? 'Students receive connection requests but cannot send them. Check your connection requests to accept invitations.'
             : 'You do not have permission to send connection requests.'
           }

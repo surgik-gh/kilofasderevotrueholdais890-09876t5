@@ -1,7 +1,7 @@
 import { useStore } from '@/store';
 import { Layout } from '@/components/Layout';
-import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, Edit, Trash2, Trophy, Eye, Plus, Calendar, Users, CheckCircle, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { BookOpen, Trash2, Eye, Plus, Calendar, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { lessonService } from '@/services/lesson.service';
@@ -10,7 +10,6 @@ import { SUBJECT_MAPPING_REVERSE } from '@/utils/subjects';
 
 export function MyLessons() {
   const { profile } = useStore();
-  const navigate = useNavigate();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -33,12 +32,10 @@ export function MyLessons() {
     loadLessons();
   }, [profile]);
 
-  if (!profile) {
-    navigate('/login');
-    return null;
-  }
+  // ProtectedRoute handles authentication, no need for manual check
 
   const handleDelete = async (id: string) => {
+    if (!profile) return;
     if (!confirm('Вы уверены? Это действие нельзя отменить.')) return;
     
     try {
